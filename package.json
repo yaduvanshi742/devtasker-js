@@ -1,0 +1,16 @@
+{
+  "name": "devtasker-js",
+  "version": "3.0.0",
+  "description": "A local-first JavaScript productivity workspace with tasks, projects, focus mode, analytics, reminders, notes, goals, and backups.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite --host 0.0.0.0",
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "devDependencies": {
+    "vite": "latest"
+  }
+}
