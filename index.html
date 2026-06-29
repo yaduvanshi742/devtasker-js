@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DevTasker JS V3 - a local-first JavaScript productivity workspace." />
+  <title>DevTasker JS V3</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#dashboard" data-view-link="dashboard" aria-label="Open dashboard">
+        <span class="brand-mark">D</span>
+        <span>
+          <strong>DevTasker</strong>
+          <small>V3 Workspace</small>
+        </span>
+      </a>
+
+      <nav class="nav-list">
+        <button class="nav-link active" data-view-link="dashboard" type="button">Dashboard</button>
+        <button class="nav-link" data-view-link="board" type="button">Kanban</button>
+        <button class="nav-link" data-view-link="calendar" type="button">Calendar</button>
+        <button class="nav-link" data-view-link="focus" type="button">Focus Mode</button>
+        <button class="nav-link" data-view-link="notes" type="button">Notes</button>
+        <button class="nav-link" data-view-link="goals" type="button">Goals</button>
+        <button class="nav-link" data-view-link="analytics" type="button">Analytics</button>
+        <button class="nav-link" data-view-link="timeline" type="button">Timeline</button>
+        <button class="nav-link" data-view-link="settings" type="button">Settings</button>
+      </nav>
+
+      <div class="sidebar-card">
+        <p class="eyebrow">Shortcut</p>
+        <strong>Ctrl + K</strong>
+        <span>Search tasks, notes, goals, and quick actions.</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Open navigation">Menu</button>
+        <div>
+          <p class="eyebrow">Local-first productivity app</p>
+          <h1 id="viewTitle">Dashboard</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="ghost-button" id="openCommandButton" type="button">Ctrl + K</button>
+          <button class="ghost-button" id="themeToggleButton" type="button">Theme</button>
+          <button class="primary-button" id="quickTaskButton" type="button">New Task</button>
+        </div>
+      </header>
+
+      <section class="view active" id="dashboardView" data-view="dashboard">
+        <div class="hero-card">
+          <div>
+            <p class="eyebrow">DevTasker JS V3</p>
+            <h2>Smart personal productivity workspace.</h2>
+            <p>Manage projects, tasks, subtasks, focus sessions, notes, goals, reminders, analytics, and backups in one clean JavaScript app.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="primary-button" data-view-link="board" type="button">Open Kanban</button>
+            <button class="secondary-button" data-view-link="focus" type="button">Start Focus</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="dashboardStats"></div>
+
+        <div class="split-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Today</p>
+                <h3>Due tasks</h3>
+              </div>
+              <button class="text-button" data-view-link="calendar" type="button">Calendar</button>
+            </div>
+            <div id="todayTaskList" class="stack-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Activity</p>
+                <h3>Recent timeline</h3>
+              </div>
+              <button class="text-button" data-view-link="timeline" type="button">View all</button>
+            </div>
+            <div id="recentActivityList" class="stack-list"></div>
+          </section>
+        </div>
+
+        <div class="split-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Projects</p>
+                <h3>Project progress</h3>
+              </div>
+              <button class="text-button" id="newProjectDashboardButton" type="button">New project</button>
+            </div>
+            <div id="projectProgressList" class="stack-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Focus</p>
+                <h3>Weekly focus minutes</h3>
+              </div>
+              <button class="text-button" data-view-link="focus" type="button">Focus mode</button>
+            </div>
+            <div id="focusSummary" class="chart-box"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="boardView" data-view="board">
+        <div class="toolbar panel">
+          <div class="form-row grow">
+            <label class="field grow">
+              <span>Search</span>
+              <input id="taskSearchInput" type="search" placeholder="Search by title, description, project..." />
+            </label>
+            <label class="field">
+              <span>Project</span>
+              <select id="projectFilterSelect"></select>
+            </label>
+            <label class="field">
+              <span>Priority</span>
+              <select id="priorityFilterSelect">
+                <option value="all">All priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </label>
+          </div>
+          <div class="toolbar-actions">
+            <button class="secondary-button" id="newProjectButton" type="button">New Project</button>
+            <button class="primary-button" id="newTaskBoardButton" type="button">New Task</button>
+          </div>
+        </div>
+
+        <div class="kanban-board" id="kanbanBoard" aria-label="Kanban task board">
+          <section class="kanban-column" data-status="todo">
+            <div class="column-header"><h3>To Do</h3><span id="todoCount">0</span></div>
+            <div class="task-dropzone" data-dropzone="todo"></div>
+          </section>
+          <section class="kanban-column" data-status="progress">
+            <div class="column-header"><h3>In Progress</h3><span id="progressCount">0</span></div>
+            <div class="task-dropzone" data-dropzone="progress"></div>
+          </section>
+          <section class="kanban-column" data-status="done">
+            <div class="column-header"><h3>Completed</h3><span id="doneCount">0</span></div>
+            <div class="task-dropzone" data-dropzone="done"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="calendarView" data-view="calendar">
+        <div class="panel calendar-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Calendar</p>
+              <h3 id="calendarTitle">Month</h3>
+            </div>
+            <div class="button-row">
+              <button class="secondary-button" id="prevMonthButton" type="button">Previous</button>
+              <button class="secondary-button" id="todayMonthButton" type="button">Today</button>
+              <button class="secondary-button" id="nextMonthButton" type="button">Next</button>
+            </div>
+          </div>
+          <div class="calendar-grid weekday-grid">
+            <strong>Sun</strong><strong>Mon</strong><strong>Tue</strong><strong>Wed</strong><strong>Thu</strong><strong>Fri</strong><strong>Sat</strong>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </section>
+
+      <section class="view" id="focusView" data-view="focus">
+        <div class="focus-layout">
+          <section class="panel focus-panel">
+            <p class="eyebrow">Focus Mode</p>
+            <h2 id="focusModeLabel">Focus session</h2>
+            <div class="timer-ring" aria-live="polite">
+              <span id="timerDisplay">25:00</span>
+            </div>
+            <div class="button-row center">
+              <button class="secondary-button" data-focus-mode="focus" type="button">Focus</button>
+              <button class="secondary-button" data-focus-mode="short" type="button">Short Break</button>
+              <button class="secondary-button" data-focus-mode="long" type="button">Long Break</button>
+            </div>
+            <label class="field">
+              <span>Attach session to task</span>
+              <select id="focusTaskSelect"></select>
+            </label>
+            <div class="button-row center">
+              <button class="primary-button" id="startTimerButton" type="button">Start</button>
+              <button class="secondary-button" id="pauseTimerButton" type="button">Pause</button>
+              <button class="danger-button" id="resetTimerButton" type="button">Reset</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Focus log</p>
+                <h3>Recent sessions</h3>
+              </div>
+              <span class="pill" id="totalFocusPill">0 min</span>
+            </div>
+            <div id="focusSessionList" class="stack-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="notesView" data-view="notes">
+        <div class="notes-layout">
+          <form class="panel form-card" id="noteForm">
+            <p class="eyebrow">Notes</p>
+            <h3>Create note</h3>
+            <label class="field">
+              <span>Title</span>
+              <input id="noteTitleInput" type="text" placeholder="Note title" required />
+            </label>
+            <label class="field">
+              <span>Body</span>
+              <textarea id="noteBodyInput" rows="5" placeholder="Write a quick note..."></textarea>
+            </label>
+            <div class="form-row">
+              <label class="field grow">
+                <span>Color</span>
+                <select id="noteColorInput">
+                  <option value="blue">Blue</option>
+                  <option value="green">Green</option>
+                  <option value="yellow">Yellow</option>
+                  <option value="pink">Pink</option>
+                </select>
+              </label>
+              <label class="check-field">
+                <input id="notePinnedInput" type="checkbox" />
+                <span>Pin note</span>
+              </label>
+            </div>
+            <button class="primary-button full" type="submit">Save Note</button>
+          </form>
+
+          <section class="panel grow">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Notes board</p>
+                <h3>Saved notes</h3>
+              </div>
+              <input class="compact-input" id="noteSearchInput" type="search" placeholder="Search notes" />
+            </div>
+            <div id="notesGrid" class="notes-grid"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="goalsView" data-view="goals">
+        <div class="split-grid align-start">
+          <form class="panel form-card" id="goalForm">
+            <p class="eyebrow">Goals</p>
+            <h3>Create daily goal</h3>
+            <label class="field">
+              <span>Goal title</span>
+              <input id="goalTitleInput" type="text" placeholder="Read docs, solve bugs, ship feature..." required />
+            </label>
+            <label class="field">
+              <span>Target count</span>
+              <input id="goalTargetInput" type="number" min="1" value="3" required />
+            </label>
+            <button class="primary-button full" type="submit">Add Goal</button>
+          </form>
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Progress</p>
+                <h3>Daily goals</h3>
+              </div>
+            </div>
+            <div id="goalsList" class="stack-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="analyticsView" data-view="analytics">
+        <div class="stats-grid" id="analyticsStats"></div>
+        <div class="split-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Tasks</p>
+                <h3>Weekly completion</h3>
+              </div>
+            </div>
+            <div id="weeklyTaskChart" class="chart-box"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Priority</p>
+                <h3>Distribution</h3>
+              </div>
+            </div>
+            <div id="priorityChart" class="chart-box"></div>
+          </section>
+        </div>
+        <div class="split-grid">
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Projects</p><h3>Progress by project</h3></div></div>
+            <div id="analyticsProjectList" class="stack-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Focus</p><h3>Focus minutes by day</h3></div></div>
+            <div id="focusChart" class="chart-box"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="timelineView" data-view="timeline">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Activity Timeline</p>
+              <h3>Workspace history</h3>
+            </div>
+            <button class="danger-button" id="clearTimelineButton" type="button">Clear Timeline</button>
+          </div>
+          <div id="timelineList" class="timeline-list"></div>
+        </section>
+      </section>
+
+      <section class="view" id="settingsView" data-view="settings">
+        <div class="split-grid align-start">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Backup</p>
+                <h3>Data management</h3>
+              </div>
+            </div>
+            <div class="stack-list">
+              <button class="primary-button full" id="exportDataButton" type="button">Export JSON Backup</button>
+              <label class="upload-box" for="importDataInput">Import JSON Backup<input id="importDataInput" type="file" accept="application/json" hidden /></label>
+              <button class="secondary-button full" id="clearCompletedButton" type="button">Clear Completed Tasks</button>
+              <button class="danger-button full" id="resetWorkspaceButton" type="button">Reset Workspace</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Preferences</p>
+                <h3>Focus and reminders</h3>
+              </div>
+            </div>
+            <div class="settings-grid">
+              <label class="field"><span>Focus minutes</span><input id="focusDurationInput" type="number" min="1" max="120" /></label>
+              <label class="field"><span>Short break</span><input id="shortBreakInput" type="number" min="1" max="60" /></label>
+              <label class="field"><span>Long break</span><input id="longBreakInput" type="number" min="1" max="90" /></label>
+            </div>
+            <div class="button-row">
+              <button class="primary-button" id="saveSettingsButton" type="button">Save Settings</button>
+              <button class="secondary-button" id="enableNotificationsButton" type="button">Enable Notifications</button>
+            </div>
+            <p class="muted" id="settingsStatus">Settings are stored locally in your browser.</p>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="taskModal" aria-hidden="true">
+    <form class="modal-card" id="taskForm" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Task editor</p>
+          <h3 id="taskModalTitle">Create task</h3>
+        </div>
+        <button class="icon-button" data-close-modal="taskModal" type="button" aria-label="Close task modal">Close</button>
+      </div>
+      <input id="taskIdInput" type="hidden" />
+      <label class="field"><span>Title</span><input id="taskTitleInput" type="text" placeholder="Build feature, fix bug, study JS..." required /></label>
+      <label class="field"><span>Description</span><textarea id="taskDescriptionInput" rows="3" placeholder="Add helpful details"></textarea></label>
+      <div class="form-row">
+        <label class="field grow"><span>Project</span><select id="taskProjectInput"></select></label>
+        <label class="field"><span>Status</span><select id="taskStatusInput"><option value="todo">To Do</option><option value="progress">In Progress</option><option value="done">Completed</option></select></label>
+      </div>
+      <div class="form-row">
+        <label class="field grow"><span>Priority</span><select id="taskPriorityInput"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+        <label class="field grow"><span>Due date</span><input id="taskDueDateInput" type="date" /></label>
+        <label class="field grow"><span>Repeat</span><select id="taskRecurringInput"><option value="none">None</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label>
+      </div>
+      <label class="field"><span>Subtasks - one item per line</span><textarea id="taskSubtasksInput" rows="4" placeholder="Design layout&#10;Write JavaScript&#10;Test mobile view"></textarea></label>
+      <div class="checklist-editor" id="subtaskChecklistPreview"></div>
+      <div class="modal-footer">
+        <button class="danger-button hidden" id="deleteTaskButton" type="button">Delete</button>
+        <button class="secondary-button" data-close-modal="taskModal" type="button">Cancel</button>
+        <button class="primary-button" type="submit">Save Task</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="projectModal" aria-hidden="true">
+    <form class="modal-card small" id="projectForm" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Project editor</p>
+          <h3 id="projectModalTitle">Create project</h3>
+        </div>
+        <button class="icon-button" data-close-modal="projectModal" type="button" aria-label="Close project modal">Close</button>
+      </div>
+      <input id="projectIdInput" type="hidden" />
+      <label class="field"><span>Name</span><input id="projectNameInput" type="text" placeholder="Portfolio, Learning, Client work..." required /></label>
+      <label class="field"><span>Description</span><textarea id="projectDescriptionInput" rows="3" placeholder="What is this project about?"></textarea></label>
+      <label class="field"><span>Accent</span><select id="projectColorInput"><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option><option value="orange">Orange</option><option value="red">Red</option></select></label>
+      <div class="modal-footer"><button class="secondary-button" data-close-modal="projectModal" type="button">Cancel</button><button class="primary-button" type="submit">Save Project</button></div>
+    </form>
+  </div>
+
+  <div class="command-backdrop" id="commandPalette" aria-hidden="true">
+    <div class="command-card" role="dialog" aria-modal="true" aria-label="Command palette">
+      <input id="commandInput" type="search" placeholder="Search or type a command..." autocomplete="off" />
+      <div id="commandResults" class="command-results"></div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
